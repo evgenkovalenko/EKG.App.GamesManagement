@@ -1,0 +1,36 @@
+services:
+
+  # ── infrastructure ────────────────────────────────────────────────────────────
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── GamesManagement service ───────────────────────────────────────────────────
+
+  games-management:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: games-management:local
+    ports:
+      - "5050:8080"
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Bitbucket__AccessToken: ${BITBUCKET_ACCESS_TOKEN}
+      MessageBroker__Host: amqp://rabbitmq
+      MessageBroker__Username: guest
+      MessageBroker__Password: guest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

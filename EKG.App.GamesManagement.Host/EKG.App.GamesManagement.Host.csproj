@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EKG.Common.App" Version="1.0.*" />
+    <PackageReference Include="EKG.Common.Model" Version="1.1.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EKG.App.GamesManagement.BLL\EKG.App.GamesManagement.BLL.csproj" />
+    <ProjectReference Include="..\EKG.App.GamesManagement.DAL\EKG.App.GamesManagement.DAL.csproj" />
+    <ProjectReference Include="..\EKG.App.GamesManagement.Model\EKG.App.GamesManagement.Model.csproj" />
+  </ItemGroup>
+
+</Project>

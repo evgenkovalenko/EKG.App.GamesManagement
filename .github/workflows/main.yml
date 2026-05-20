@@ -1,0 +1,76 @@
+name: Build and publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/evgenkovalenko/ekg.app.gamesmanagement
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: '10.x'
+
+      - name: Create nuget.config
+        run: |
+          cat > nuget.config << EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+              <add key="github" value="https://nuget.pkg.github.com/evgenkovalenko/index.json" />
+              <add key="local-packages" value="./local-packages" />
+            </packageSources>
+            <packageSourceCredentials>
+              <github>
+                <add key="Username" value="evgenkovalenko" />
+                <add key="ClearTextPassword" value="${{ secrets.NUGET_READ_TOKEN }}" />
+              </github>
+            </packageSourceCredentials>
+          </configuration>
+          EOF
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' EKG.App.GamesManagement.Host/EKG.App.GamesManagement.Host.csproj | head -1)
+          MAJOR_MINOR=$(echo $VERSION | cut -d'.' -f1,2)
+          echo "tag=$MAJOR_MINOR.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Pack Model
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' EKG.App.GamesManagement.Model/EKG.App.GamesManagement.Model.csproj | head -1)
+          MAJOR_MINOR=$(echo $VERSION | cut -d'.' -f1,2)
+          dotnet pack EKG.App.GamesManagement.Model/EKG.App.GamesManagement.Model.csproj --configuration Release /p:Version=$MAJOR_MINOR.${{ github.run_number }}
+
+      - name: Publish Model package
+        run: dotnet nuget push **/*.nupkg --source "https://nuget.pkg.github.com/evgenkovalenko/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE_NAME }}:latest

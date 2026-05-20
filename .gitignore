@@ -1,0 +1,23 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+
+## Rider
+.idea/
+
+## VS Code
+.vscode/
+
+## NuGet
+*.nupkg
+nuget.config
+local-packages/*
+!local-packages/.gitkeep
+
+## Environment
+.env
+appsettings.*.Local.json

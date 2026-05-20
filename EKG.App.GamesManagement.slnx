@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/.github/">
+    <File Path=".github/workflows/main.yml" />
+  </Folder>
+  <Folder Name="/SolutionItems/">
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+    <File Path="readme.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="EKG.App.GamesManagement.Tests.Unit/EKG.App.GamesManagement.Tests.Unit.csproj" />
+  </Folder>
+  <Project Path="EKG.App.GamesManagement.BLL/EKG.App.GamesManagement.BLL.csproj" />
+  <Project Path="EKG.App.GamesManagement.DAL/EKG.App.GamesManagement.DAL.csproj" />
+  <Project Path="EKG.App.GamesManagement.Host/EKG.App.GamesManagement.Host.csproj" />
+  <Project Path="EKG.App.GamesManagement.Model/EKG.App.GamesManagement.Model.csproj" />
+</Solution>
