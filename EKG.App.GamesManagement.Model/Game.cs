@@ -66,38 +66,50 @@ public class Game
     public List<string> RestrictedTerritories { get; set; } = [];
 
     [JsonPropertyName("currencies")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Currencies { get; set; }
 
     [JsonPropertyName("maintenanceWindows")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement MaintenanceWindows { get; set; }
 
     [JsonPropertyName("additional")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Additional { get; set; }
 
     [JsonPropertyName("bonus")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Bonus { get; set; }
 
     [JsonPropertyName("creation")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Creation { get; set; }
 
     [JsonPropertyName("playMode")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement PlayMode { get; set; }
 
     [JsonPropertyName("popularity")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Popularity { get; set; }
 
     [JsonPropertyName("presentation")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Presentation { get; set; }
 
     [JsonPropertyName("property")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Property { get; set; }
 
     [JsonPropertyName("report")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Report { get; set; }
 
     [JsonPropertyName("ruleUrl")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement RuleUrl { get; set; }
 
     [JsonPropertyName("vendorLimits")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement VendorLimits { get; set; }
 }
