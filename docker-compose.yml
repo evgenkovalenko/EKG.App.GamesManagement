@@ -27,7 +27,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      Bitbucket__AccessToken: ${BITBUCKET_ACCESS_TOKEN}
+      Bitbucket__GamesRepoToken: ${BITBUCKET_GAMES_TOKEN}
+      Bitbucket__OperatorGamesRepoToken: ${BITBUCKET_OPERATOR_GAMES_TOKEN}
       MessageBroker__Host: amqp://rabbitmq
       MessageBroker__Username: guest
       MessageBroker__Password: guest

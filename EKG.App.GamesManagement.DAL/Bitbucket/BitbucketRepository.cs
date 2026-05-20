@@ -13,14 +13,17 @@ internal class BitbucketRepository : IBitbucketRepository
     {
         _http = httpClientFactory.CreateClient(nameof(BitbucketRepository));
         _options = options.Value;
-        _http.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _options.AccessToken);
     }
+
+    private string ResolveToken(string repo) =>
+        repo == _options.OperatorGamesRepo ? _options.OperatorGamesRepoToken : _options.GamesRepoToken;
 
     public async Task<string?> GetFileAsync(string repo, string filePath)
     {
         var url = $"{ApiBase}/{_options.Workspace}/{repo}/src/{_options.Branch}/{filePath}";
-        var response = await _http.GetAsync(url);
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ResolveToken(repo));
+        var response = await _http.SendAsync(req);
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
         response.EnsureSuccessStatusCode();
@@ -31,12 +34,16 @@ internal class BitbucketRepository : IBitbucketRepository
     {
         var url = $"{ApiBase}/{_options.Workspace}/{repo}/src";
 
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", ResolveToken(repo));
+
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(content), filePath);
         form.Add(new StringContent(commitMessage), "message");
         form.Add(new StringContent(_options.Branch), "branch");
+        req.Content = form;
 
-        var response = await _http.PostAsync(url, form);
+        var response = await _http.SendAsync(req);
         response.EnsureSuccessStatusCode();
     }
 }

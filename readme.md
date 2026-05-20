@@ -142,7 +142,8 @@ Saves an operator filter to the operator-games repository as `{domainId}/filter.
 {
   "Application": { "Name": "GamesManagement" },
   "Bitbucket": {
-    "AccessToken": "",
+    "GamesRepoToken": "",
+    "OperatorGamesRepoToken": "",
     "Workspace": "evkgroup",
     "GamesRepo": "ekg.caas.games",
     "OperatorGamesRepo": "ekg.caas.operatorgames",
@@ -159,7 +160,8 @@ Saves an operator filter to the operator-games repository as `{domainId}/filter.
 
 | Key | Description |
 |---|---|
-| `Bitbucket:AccessToken` | Bitbucket HTTP access token (set via env var or `.env`) |
+| `Bitbucket:GamesRepoToken` | Bitbucket access token for the games repository |
+| `Bitbucket:OperatorGamesRepoToken` | Bitbucket access token for the operator-games repository |
 | `Bitbucket:Workspace` | Bitbucket workspace |
 | `Bitbucket:GamesRepo` | Slug of the original games repo |
 | `Bitbucket:OperatorGamesRepo` | Slug of the operator-games repo |
@@ -175,7 +177,8 @@ Saves an operator filter to the operator-games repository as `{domainId}/filter.
 Create a `.env` file in the repo root (already committed for local dev — **do not commit to git**):
 
 ```
-BITBUCKET_ACCESS_TOKEN=your-token-here
+BITBUCKET_GAMES_TOKEN=your-games-repo-token
+BITBUCKET_OPERATOR_GAMES_TOKEN=your-operatorgames-repo-token
 ```
 
 ```bash
