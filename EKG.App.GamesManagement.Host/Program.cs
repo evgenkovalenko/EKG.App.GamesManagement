@@ -2,7 +2,7 @@ using EKG.App.GamesManagement.BLL.Handlers;
 using EKG.App.GamesManagement.BLL.Publishers;
 using EKG.App.GamesManagement.DAL;
 using EKG.Common.App;
-using EKG.Common.Messages;
+using EKG.Common.Messages.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
