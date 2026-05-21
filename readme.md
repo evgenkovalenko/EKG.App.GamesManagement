@@ -172,9 +172,11 @@ Saves an operator filter to the operator-games repository as `{domainId}/filter.
 
 ## Running Locally
 
-### Option 1 — Docker Compose
+### Option 1 — Tilt (recommended)
 
-Create a `.env` file in the repo root (already committed for local dev — **do not commit to git**):
+Requires [Rancher Desktop](https://rancherdesktop.io/) with `dockerd` and [Tilt](https://tilt.dev/) installed.
+
+Populate `.env` in the repo root (gitignored):
 
 ```
 BITBUCKET_GAMES_TOKEN=your-games-repo-token
@@ -182,7 +184,7 @@ BITBUCKET_OPERATOR_GAMES_TOKEN=your-operatorgames-repo-token
 ```
 
 ```bash
-docker-compose up --build
+tilt up
 ```
 
 | Service | URL |
@@ -190,11 +192,23 @@ docker-compose up --build
 | GamesManagement API | http://localhost:5050/scalar/v1 |
 | RabbitMQ Management | http://localhost:15672 (guest/guest) |
 
-### Option 2 — dotnet run
+The `games-management` resource uses manual trigger mode — click **▶ Run** in the Tilt UI to (re)start it after a code change.
+
+### Option 2 — Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+Same URLs as above.
+
+### Option 3 — dotnet run
 
 Requires RabbitMQ on `localhost:5672`.
 
 ```bash
+$env:Bitbucket__GamesRepoToken="your-games-repo-token"
+$env:Bitbucket__OperatorGamesRepoToken="your-operatorgames-repo-token"
 cd EKG.App.GamesManagement.Host
 dotnet run
 ```
