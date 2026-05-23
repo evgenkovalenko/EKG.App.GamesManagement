@@ -5,6 +5,7 @@
   <Folder Name="/SolutionItems/">
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
+    <File Path="nuget.config" />
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/Tests/">

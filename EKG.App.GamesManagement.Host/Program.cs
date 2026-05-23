@@ -12,6 +12,7 @@ builder.Services.AddGamesManagementDal(builder.Configuration);
 builder.Services.AddScoped<SaveGameHandler>();
 builder.Services.AddScoped<SaveGameOverrideHandler>();
 builder.Services.AddScoped<SaveOperatorFilterHandler>();
+builder.Services.AddScoped<ImportGamesHandler>();
 
 builder.Services.AddScoped<GamesChangedPublisher>();
 

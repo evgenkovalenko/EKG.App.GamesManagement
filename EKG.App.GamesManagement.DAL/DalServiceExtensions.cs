@@ -1,4 +1,5 @@
 using EKG.App.GamesManagement.DAL.Bitbucket;
+using EKG.App.GamesManagement.DAL.Groq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,6 +16,10 @@ public static class DalServiceExtensions
         services.AddSingleton<IBitbucketRepository>(sp => new BitbucketRepository(
             sp.GetRequiredService<IHttpClientFactory>(),
             sp.GetRequiredService<IOptions<BitbucketOptions>>()));
+
+        services.Configure<GroqOptions>(configuration.GetSection("Groq"));
+        services.AddSingleton<IGroqClient, GroqClient>();
+
         return services;
     }
 }
