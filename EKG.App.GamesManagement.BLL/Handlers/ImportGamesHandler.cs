@@ -168,13 +168,25 @@ public class ImportGamesHandler
     private async Task<List<Game>> ExtractViaAiAsync(string rawContent)
     {
         var gamesJson = await _groq.ExtractGamesJsonAsync(rawContent);
+        _logger.LogDebug("Groq raw response: {Response}", gamesJson);
+
+        // Strip markdown code fences if the model wrapped the output
+        var trimmed = gamesJson.Trim();
+        if (trimmed.StartsWith("```"))
+        {
+            var firstNewline = trimmed.IndexOf('\n');
+            var lastFence = trimmed.LastIndexOf("```");
+            if (firstNewline > 0 && lastFence > firstNewline)
+                trimmed = trimmed[(firstNewline + 1)..lastFence].Trim();
+        }
+
         try
         {
-            return JsonSerializer.Deserialize<List<Game>>(gamesJson, JsonOptions) ?? [];
+            return JsonSerializer.Deserialize<List<Game>>(trimmed, JsonOptions) ?? [];
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "AI returned invalid JSON, cannot parse games");
+            _logger.LogWarning(ex, "AI returned invalid JSON — raw response: {Response}", gamesJson);
             return [];
         }
     }
