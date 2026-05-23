@@ -32,6 +32,14 @@ internal class GroqClient : IGroqClient
             Preserve ALL fields that exist in the source — do not drop or summarise anything.
             If a field is absent in the source, omit it from the output object entirely (do not emit nulls or empty defaults).
 
+            If the source uses flat underscore-separated column names (e.g. CSV headers like
+            bonus_contribution, playMode_fun, property_width, creation_time, presentation_gameName),
+            reconstruct them as nested JSON objects using the underscore as a path separator.
+            For example: bonus_contribution and bonus_overridable become nested fields inside a "bonus" object;
+            playMode_fun, playMode_anonymity, playMode_realMoney become fields inside a "playMode" object;
+            property_width, property_height, property_license, property_terminal become fields inside a "property" object.
+            Pipe-separated strings such as "en|de|fr" or "PC|iPad|Android" must be split into JSON arrays.
+
             Target schema for each game object:
             {schema.ToJsonString(new JsonSerializerOptions { WriteIndented = true })}
             """;
