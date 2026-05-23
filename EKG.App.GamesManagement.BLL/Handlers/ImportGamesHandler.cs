@@ -35,16 +35,13 @@ public class ImportGamesHandler
     {
         var rawContent = await ReadContentAsync(fileStream, fileName);
 
-        var games = TryDirectJsonExtraction(rawContent);
+        _logger.LogInformation("Extracting games via AI");
+        var games = await ExtractViaAiAsync(rawContent);
 
-        if (games != null)
+        if (games.Count == 0)
         {
-            _logger.LogInformation("Direct JSON extraction succeeded: {Count} game(s)", games.Count);
-        }
-        else
-        {
-            _logger.LogInformation("Direct extraction failed, falling back to AI");
-            games = await ExtractViaAiAsync(rawContent);
+            _logger.LogInformation("AI returned no games, falling back to direct JSON extraction");
+            games = TryDirectJsonExtraction(rawContent) ?? [];
         }
 
         if (games.Count == 0)
