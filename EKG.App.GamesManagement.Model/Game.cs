@@ -65,6 +65,7 @@ public class Game
     [JsonPropertyName("restrictedTerritories")]
     public List<string> RestrictedTerritories { get; set; } = [];
 
+    // Structure varies by vendor; kept flexible
     [JsonPropertyName("currencies")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Currencies { get; set; }
@@ -73,42 +74,45 @@ public class Game
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement MaintenanceWindows { get; set; }
 
+    // Key = feature name (e.g. "highStake"), value = display name + typed value
     [JsonPropertyName("additional")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Additional { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, AdditionalFeature>? Additional { get; set; }
 
     [JsonPropertyName("bonus")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Bonus { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GameBonus? Bonus { get; set; }
 
     [JsonPropertyName("creation")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Creation { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GameCreation? Creation { get; set; }
 
     [JsonPropertyName("playMode")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement PlayMode { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GamePlayMode? PlayMode { get; set; }
 
     [JsonPropertyName("popularity")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Popularity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GamePopularity? Popularity { get; set; }
 
     [JsonPropertyName("presentation")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Presentation { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GamePresentation? Presentation { get; set; }
 
     [JsonPropertyName("property")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Property { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GameProperty? Property { get; set; }
 
     [JsonPropertyName("report")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Report { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GameReport? Report { get; set; }
 
+    // Locale → URL map; empty object {} when no rule URLs defined
     [JsonPropertyName("ruleUrl")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement RuleUrl { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? RuleUrl { get; set; }
 
+    // Vendor-specific limits; structure varies, kept flexible
     [JsonPropertyName("vendorLimits")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement VendorLimits { get; set; }
