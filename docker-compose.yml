@@ -30,6 +30,7 @@ services:
       Bitbucket__GamesRepoToken: ${BITBUCKET_GAMES_TOKEN}
       Bitbucket__OperatorGamesRepoToken: ${BITBUCKET_OPERATOR_GAMES_TOKEN}
       Groq__ApiKey: ${GROQ_API_KEY}
+      Groq__ModelName: llama-3.3-70b-versatile
       MessageBroker__Host: amqp://rabbitmq
       MessageBroker__Username: guest
       MessageBroker__Password: guest

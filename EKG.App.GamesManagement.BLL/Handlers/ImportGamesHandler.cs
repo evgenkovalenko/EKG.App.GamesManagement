@@ -35,17 +35,16 @@ public class ImportGamesHandler
     {
         var rawContent = await ReadContentAsync(fileStream, fileName);
 
-        var gamesJson = await _groq.ExtractGamesJsonAsync(rawContent);
+        var games = TryDirectJsonExtraction(rawContent);
 
-        List<Game> games;
-        try
+        if (games != null)
         {
-            games = JsonSerializer.Deserialize<List<Game>>(gamesJson, JsonOptions) ?? [];
+            _logger.LogInformation("Direct JSON extraction succeeded: {Count} game(s)", games.Count);
         }
-        catch (JsonException ex)
+        else
         {
-            _logger.LogWarning(ex, "AI returned invalid JSON, cannot parse games");
-            return new ImportGamesResponse { Success = false, ErrorMessage = "AI returned invalid JSON.", GamesFound = 0 };
+            _logger.LogInformation("Direct extraction failed, falling back to AI");
+            games = await ExtractViaAiAsync(rawContent);
         }
 
         if (games.Count == 0)
@@ -75,19 +74,112 @@ public class ImportGamesHandler
         var description = $"Imported {committed.Count} game(s) from file `{fileName}`:\n\n" +
                           string.Join("\n", committed.Select(f => $"- {f}"));
 
-        var prUrl = await _bitbucket.CreatePullRequestAsync(
-            _bitbucketOptions.GamesRepo,
-            branchName,
-            $"Import {committed.Count} game(s) — {timestamp}",
-            description);
+        string? prUrl = null;
+        try
+        {
+            prUrl = await _bitbucket.CreatePullRequestAsync(
+                _bitbucketOptions.GamesRepo,
+                branchName,
+                $"Import {committed.Count} game(s) — {timestamp}",
+                description);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Games committed to branch '{Branch}' but PR creation failed", branchName);
+        }
 
         return new ImportGamesResponse
         {
             Success = true,
             GamesFound = games.Count,
             GamesCommitted = committed.Count,
+            BranchName = branchName,
             PullRequestUrl = prUrl
         };
+    }
+
+    // Tries to deserialise games directly from the JSON without AI.
+    // Handles: plain array, dict-of-games (keyed by id), and arbitrary wrappers (e.g. snapshot.games).
+    // Returns null if the content is not recognised JSON or contains no game-like objects.
+    private List<Game>? TryDirectJsonExtraction(string content)
+    {
+        JsonDocument doc;
+        try { doc = JsonDocument.Parse(content); }
+        catch { return null; }
+
+        using (doc)
+        {
+            var gameElements = FindGameElements(doc.RootElement);
+            if (gameElements.Count == 0) return null;
+
+            var games = new List<Game>();
+            foreach (var element in gameElements)
+            {
+                try
+                {
+                    var game = JsonSerializer.Deserialize<Game>(element.GetRawText(), JsonOptions);
+                    if (game != null) games.Add(game);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Skipping unparseable game element");
+                }
+            }
+            return games.Count > 0 ? games : null;
+        }
+    }
+
+    // Recursively searches a JsonElement for a collection of game-like objects.
+    private static List<JsonElement> FindGameElements(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Array)
+        {
+            var items = element.EnumerateArray()
+                .Where(e => e.ValueKind == JsonValueKind.Object && IsGameLike(e))
+                .Select(e => e.Clone())
+                .ToList();
+            if (items.Count > 0) return items;
+        }
+
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            // Object whose values are all game-like → it's a dict keyed by id (e.g. "41836": {...})
+            var values = element.EnumerateObject().Select(p => p.Value).ToList();
+            if (values.Count > 0 && values.All(v => v.ValueKind == JsonValueKind.Object && IsGameLike(v)))
+                return values.Select(v => v.Clone()).ToList();
+
+            // Otherwise recurse into each property to find the games collection
+            foreach (var prop in element.EnumerateObject())
+            {
+                var found = FindGameElements(prop.Value);
+                if (found.Count > 0) return found;
+            }
+        }
+
+        return [];
+    }
+
+    // A JSON object is "game-like" when it has at least two of the key identifying fields.
+    private static bool IsGameLike(JsonElement element)
+    {
+        int hits = 0;
+        foreach (var field in new[] { "slug", "vendor", "gameCode", "gameID", "vendorID" })
+            if (element.TryGetProperty(field, out _) && ++hits >= 2) return true;
+        return false;
+    }
+
+    private async Task<List<Game>> ExtractViaAiAsync(string rawContent)
+    {
+        var gamesJson = await _groq.ExtractGamesJsonAsync(rawContent);
+        try
+        {
+            return JsonSerializer.Deserialize<List<Game>>(gamesJson, JsonOptions) ?? [];
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "AI returned invalid JSON, cannot parse games");
+            return [];
+        }
     }
 
     private static async Task<string> ReadContentAsync(Stream stream, string fileName)
