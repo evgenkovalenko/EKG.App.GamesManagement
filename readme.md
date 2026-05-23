@@ -97,6 +97,39 @@ Compares the changed game with the original in Bitbucket, computes a diff of cha
 
 ---
 
+### `POST /games/import`
+
+Accepts a `.json` or `.zip` file containing game data in any format. Uses Groq AI (`llama-3.3-70b-versatile`) to extract and normalise games into the Game model, commits each game as `{Vendor}_{Slug}.json` on a new feature branch, then opens one Pull Request covering the entire batch.
+
+**Request:** `multipart/form-data`
+
+| Field | Type | Description |
+|---|---|---|
+| `file` | File | `.json` file with one or many games, or `.zip` archive containing multiple `.json` files |
+
+**Response (success):**
+```json
+{
+  "success": true,
+  "gamesFound": 6,
+  "gamesCommitted": 6,
+  "branchName": "import/20260523-111745",
+  "pullRequestUrl": "https://bitbucket.org/evkgroup/ekg.caas.games/pull-requests/1"
+}
+```
+
+**Response (no games found):**
+```json
+{ "success": true, "gamesFound": 0, "gamesCommitted": 0 }
+```
+
+**Notes:**
+- Games with missing `slug` or `vendor` are skipped and logged.
+- If PR creation fails (e.g. token scope), the response still returns `success: true` with `pullRequestUrl: null` and `branchName` so the branch can be used to open a PR manually.
+- Large files should be split into batches (~25 KB each) to stay within the Groq free-tier token-per-minute limit.
+
+---
+
 ### `POST /games/save-filter`
 
 Saves an operator filter to the operator-games repository as `{domainId}/filter.json`.
@@ -160,13 +193,15 @@ Saves an operator filter to the operator-games repository as `{domainId}/filter.
 
 | Key | Description |
 |---|---|
-| `Bitbucket:GamesRepoToken` | Bitbucket access token for the games repository |
+| `Bitbucket:GamesRepoToken` | Bitbucket access token for the games repository (requires `repository:write` + `pullrequest:write`) |
 | `Bitbucket:OperatorGamesRepoToken` | Bitbucket access token for the operator-games repository |
 | `Bitbucket:Workspace` | Bitbucket workspace |
 | `Bitbucket:GamesRepo` | Slug of the original games repo |
 | `Bitbucket:OperatorGamesRepo` | Slug of the operator-games repo |
 | `Bitbucket:Branch` | Branch to commit to (default: `main`) |
 | `MessageBroker:*` | RabbitMQ connection settings |
+| `Groq:ApiKey` | Groq API key — set via `GROQ_API_KEY` env var / `.env` file |
+| `Groq:ModelName` | Groq model for game extraction (default: `llama-3.3-70b-versatile`) |
 
 ---
 
@@ -209,6 +244,7 @@ Requires RabbitMQ on `localhost:5672`.
 ```bash
 $env:Bitbucket__GamesRepoToken="your-games-repo-token"
 $env:Bitbucket__OperatorGamesRepoToken="your-operatorgames-repo-token"
+$env:Groq__ApiKey="your-groq-api-key"
 cd EKG.App.GamesManagement.Host
 dotnet run
 ```
@@ -245,6 +281,29 @@ cd ..\EKG.Common.GamesClient
 dotnet pack EKG.Common.GamesClient\EKG.Common.GamesClient.csproj -c Release
 copy EKG.Common.GamesClient\bin\Release\*.nupkg ..\EKG.App.GamesManagement\local-packages\
 ```
+
+---
+
+## Game Model
+
+The `Game` class in `EKG.App.GamesManagement.Model` maps directly to the JSON files stored in the Bitbucket games repository. All nested objects use concrete types rather than `JsonElement`:
+
+| Property | Type | Description |
+|---|---|---|
+| `Additional` | `Dictionary<string, AdditionalFeature>` | Feature flags (e.g. `highStake`, `fullScreen`); each has `DisplayName` and a `Value` (bool/string/number) |
+| `Bonus` | `GameBonus` | `Contribution` (double), `Overridable` (bool) |
+| `Creation` | `GameCreation` | `LastModified`, `Time`, `NewGameExpiryTime` (DateTime), `UniversalId` |
+| `PlayMode` | `GamePlayMode` | `Anonymity`, `Fun`, `RealMoney` (bool) |
+| `Popularity` | `GamePopularity` | `Coefficient` (double) |
+| `Presentation` | `GamePresentation` | Localized string dictionaries for `GameName`, `Thumbnail`, `Logo`, etc.; `Icons` keyed by pixel size |
+| `Property` | `GameProperty` | `FreeSpin`, `HitFrequency`, `Terminal`, `Width`, `Height`, `License` |
+| `Report` | `GameReport` | `Category`, `InvoicingGroup` |
+| `RuleUrl` | `Dictionary<string, string>` | Locale → URL map |
+| `Currencies` | `JsonElement` | Structure varies by vendor |
+| `MaintenanceWindows` | `JsonElement` | Structure varies by vendor |
+| `VendorLimits` | `JsonElement` | Structure varies by vendor |
+
+All supporting types are defined in `GameTypes.cs` in the Model project.
 
 ---
 
