@@ -8,7 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EKG.Common.ACS" Version="1.0.*" />
     <PackageReference Include="EKG.Common.App" Version="1.0.*" />
+    <PackageReference Include="EKG.Common.Cache.Redis" Version="1.0.*" />
     <PackageReference Include="EKG.Common.Messages" Version="1.0.*" />
     <PackageReference Include="EKG.Common.Model" Version="1.1.*" />
   </ItemGroup>

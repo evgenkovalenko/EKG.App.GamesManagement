@@ -1,11 +1,13 @@
 using EKG.App.GamesManagement.BLL.Handlers;
 using EKG.App.GamesManagement.Model;
+using EKG.Common.ACS;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EKG.App.GamesManagement.Host.Controllers;
 
 [ApiController]
 [Route("games")]
+[EkgAuth(AcsComponents.GamesManagement)]
 public class GamesController : ControllerBase
 {
     private readonly SaveGameHandler _saveGameHandler;

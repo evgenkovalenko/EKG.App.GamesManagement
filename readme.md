@@ -17,11 +17,24 @@ EKG.App.GamesManagement
 
 ### Infrastructure Dependencies
 
-| Service    | Purpose                     | Default Port |
-|------------|-----------------------------|-------------|
-| RabbitMQ 3 | Notify GamesClient of changes | 5672        |
+| Service    | Purpose                            | Default Port |
+|------------|------------------------------------|-------------|
+| RabbitMQ 3 | Notify GamesClient of changes      | 5672        |
+| Redis 7    | Session/token validation (via ACS) | 6379        |
 
 Bitbucket is accessed over HTTPS — no local infrastructure needed.
+
+---
+
+## Authentication
+
+All `/games/*` endpoints require either:
+- `X-EKG-Session: <sessionToken>` — admin login session
+- `X-EKG-Token: <apiToken>` — API token with `gamesmanagement` component access
+
+Unauthenticated requests receive **HTTP 401**. The `EkgAuthAttribute(AcsComponents.GamesManagement)` from `EKG.Common.ACS` handles validation on all actions in `GamesController`.
+
+See [`EKG.Docs/AuthenticationFlow.md`](../EKG.Docs/AuthenticationFlow.md) for the full authentication flow.
 
 ---
 
