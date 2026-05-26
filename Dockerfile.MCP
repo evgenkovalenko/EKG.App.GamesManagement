@@ -1,0 +1,23 @@
+# ── restore stage (cached as long as *.csproj files don't change) ─────────────
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+WORKDIR /src
+
+COPY nuget.config .
+COPY local-packages/ local-packages/
+COPY EKG.App.GamesManagement.Host.MCP/*.csproj      EKG.App.GamesManagement.Host.MCP/
+
+RUN dotnet restore "EKG.App.GamesManagement.Host.MCP/EKG.App.GamesManagement.Host.MCP.csproj" \
+    --ignore-failed-sources
+
+# ── publish stage ──────────────────────────────────────────────────────────────
+FROM restore AS publish
+COPY . .
+RUN dotnet publish "EKG.App.GamesManagement.Host.MCP/EKG.App.GamesManagement.Host.MCP.csproj" \
+    -c Release --no-restore -o /app/publish
+
+# ── runtime image ──────────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=publish /app/publish .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "EKG.App.GamesManagement.Host.MCP.dll"]

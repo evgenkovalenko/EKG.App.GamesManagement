@@ -11,6 +11,7 @@ permissions:
 
 env:
   IMAGE_NAME: ghcr.io/evgenkovalenko/ekg.app.gamesmanagement
+  IMAGE_MCP: ghcr.io/evgenkovalenko/ekg.app.gamesmanagement.mcp
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -74,3 +75,13 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.tag }}
             ${{ env.IMAGE_NAME }}:latest
+
+      - name: Build and push GamesManagement MCP image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.MCP
+          push: true
+          tags: |
+            ${{ env.IMAGE_MCP }}:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE_MCP }}:latest
